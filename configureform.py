@@ -588,7 +588,7 @@ class ConfigureForm(Form):
         self._copy_option.Enabled = False
         self._copy_option.Location = System.Drawing.Point(138, 44)
         self._copy_option.Name = "copy_option"
-        self._copy_option.Size = System.Drawing.Size(149, 17)
+        self._copy_option.Size = System.Drawing.Size(180, 17)
         self._copy_option.TabIndex = 6
         self._copy_option.Text = "Add copied book to library"
         self._copy_option.UseVisualStyleBackColor = True
@@ -2355,6 +2355,7 @@ class ConfigureForm(Form):
 
     def create_search_insert_controls(self):
         self._insert_controls.SuspendLayout()
+
         self._search_insert_controls.SuspendLayout()
         self._search_insert_controls_name = System.Windows.Forms.TextBox()
         self._search_insert_controls_label = System.Windows.Forms.Label()
@@ -2367,7 +2368,7 @@ class ConfigureForm(Form):
         # 
         # search_insert_controls_name
         # 
-        self._search_insert_controls_name.Location = System.Drawing.Point(51, 6)
+        self._search_insert_controls_name.Location = System.Drawing.Point(56, 6)
         self._search_insert_controls_name.Name = "search_insert_controls_name"
         self._search_insert_controls_name.Size = System.Drawing.Size(435, 20)
         self._search_insert_controls_name.TabIndex = 1
@@ -2555,7 +2556,7 @@ class ConfigureForm(Form):
         dialog = NewIllegalCharacterDialog(self.profile.IllegalCharacters.keys())
         ThemeMe(dialog)
 
-        result = dialog.ShowDialog()
+        result = dialog.ShowDialog(self)
 
         if result == DialogResult.OK:
             character = dialog.GetCharacter()
