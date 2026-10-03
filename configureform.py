@@ -120,6 +120,22 @@ class ConfigureForm(Form):
 
         self.adjust_combo_box_drop_down_width(self._profile_selector.ComboBox)
 
+        self.make_resizable()
+
+
+    def make_resizable(self):
+        """Lets the form be resized, with the pages and the rules list growing with it.
+
+        Called once all the controls have their designed sizes, since anchors keep the distances at the time they are set.
+        """
+        self.AutoSize = False
+        self.MinimumSize = self.Size
+        fill = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+        for page in (self._overview_page, self._files_page, self._folders_page, self._options_page, self._rules_page):
+            page.Anchor = fill
+        self._okay.Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+        self._cancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+
 
     def initialize_component(self):
         self._toolstrip = System.Windows.Forms.ToolStrip()
@@ -989,6 +1005,9 @@ class ConfigureForm(Form):
         self._metadata_rules_add_rule.Click += self.add_metadata_rule
 
         self.load_rules_page_settings()
+
+        #Grow the rules list with the form. Set here because the rules page is created when first shown.
+        self._metadata_rules_container.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
 
         self._metadata_rules_page.ResumeLayout()
         self._folder_rules_page.ResumeLayout()
