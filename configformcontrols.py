@@ -959,8 +959,14 @@ class MetadataExcludeRuleControl(FlowLayoutPanel):
 
 
     def fit_width(self, width):
-        """Stretches the rule to the width by widening the value box."""
-        value_width = max(width - self._fixed_width(), int(round(80 * get_dpi_scale())))
+        """Stretches the rule to the width. A quarter of the extra width goes to the field, up to 60 pixels, and the rest to the value box."""
+        scale = get_dpi_scale()
+        if not hasattr(self, "_field_base_width"):
+            self._field_base_width = self._field.Width
+        self._field.Width = self._field_base_width
+        extra = max(width - self.min_width(), 0)
+        self._field.Width = self._field_base_width + min(extra // 4, int(round(60 * scale)))
+        value_width = max(width - self._fixed_width(), int(round(80 * scale)))
         self._value_textbox.Width = value_width
         self._value_combobox.Width = value_width
         self.Width = self._fixed_width() + value_width
