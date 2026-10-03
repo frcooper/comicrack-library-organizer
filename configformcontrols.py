@@ -955,7 +955,9 @@ class MetadataExcludeRuleControl(FlowLayoutPanel):
 
 
     def min_width(self):
-        return self._fixed_width() + int(round(80 * get_dpi_scale()))
+        #Measured with the field at its base width, since fit_width may have widened it
+        field_width = getattr(self, "_field_base_width", self._field.Width)
+        return self._fixed_width() - self._field.Width + field_width + int(round(80 * get_dpi_scale()))
 
 
     def fit_width(self, width):

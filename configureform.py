@@ -144,6 +144,15 @@ class ConfigureForm(Form):
             self.mark_dpi_scaled(control)
 
 
+    def use_window_color_for_tab_pages(self, control):
+        """Draws the tab pages in the window color instead of the visual style's white, so the pages match the rest of the form."""
+        if type(control) is TabPage:
+            control.UseVisualStyleBackColor = False
+            control.BackColor = SystemColors.Control
+        for child in control.Controls:
+            self.use_window_color_for_tab_pages(child)
+
+
     def mark_dpi_scaled(self, control):
         self._dpi_scaled.add(control)
         for child in control.Controls:
@@ -1033,6 +1042,14 @@ class ConfigureForm(Form):
         self._metadata_rules_add_rule.Click += self.add_metadata_rule
 
         self._metadata_rules_container.Resize += self.fit_metadata_rules
+
+        #The rules are always fitted to the width of the list, so it only scrolls vertically.
+        #AutoScroll has to be off while the horizontal scroll bar is disabled.
+        self._metadata_rules_container.AutoScroll = False
+        self._metadata_rules_container.HorizontalScroll.Maximum = 0
+        self._metadata_rules_container.HorizontalScroll.Enabled = False
+        self._metadata_rules_container.HorizontalScroll.Visible = False
+        self._metadata_rules_container.AutoScroll = True
 
         #Grow the rules list with the form. Set here because the rules page is created when first shown.
         self._metadata_rules_container.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
@@ -2171,6 +2188,7 @@ class ConfigureForm(Form):
         sender.Checked = True
 
         self.scale_new_controls(sender.Tag)
+        self.use_window_color_for_tab_pages(sender.Tag)
                 
         sender.Tag.Visible = True
         
@@ -2498,6 +2516,8 @@ class ConfigureForm(Form):
 
     def fit_metadata_rules(self, sender, e):
         fit_rule_controls(self._metadata_rules_container, self.metadata_rules_width())
+        #Recalculate the scroll range now, so a range left over from a wider layout doesn't stay
+        self._metadata_rules_container.PerformLayout()
 
 
     def remove_metadata_rule(self, sender, e):
