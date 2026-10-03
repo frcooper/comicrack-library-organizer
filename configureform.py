@@ -77,6 +77,12 @@ class ConfigureForm(Form):
 
         self.initialize_component()
 
+        #The controls are laid out for 96 DPI. Each control is scaled to the screen DPI once, when it is first shown.
+        self._dpi_scaled = set()
+        self.scale_new_controls(self)
+        for control in (self._insert_controls, self._space_automatically, self._preview_book_selector):
+            self.scale_new_controls(control)
+
         print "Done the initialize function"
 
 
@@ -123,6 +129,25 @@ class ConfigureForm(Form):
         self.make_resizable()
 
 
+    def scale_new_controls(self, control):
+        """Scales the controls in this control's tree that haven't been scaled for the screen DPI yet."""
+        if control in self._dpi_scaled:
+            #Rules and groups scale themselves as they are added
+            if control is getattr(self, "_metadata_rules_container", None):
+                return
+            for child in control.Controls:
+                self.scale_new_controls(child)
+        else:
+            scale_for_dpi(control)
+            self.mark_dpi_scaled(control)
+
+
+    def mark_dpi_scaled(self, control):
+        self._dpi_scaled.add(control)
+        for child in control.Controls:
+            self.mark_dpi_scaled(child)
+
+
     def make_resizable(self):
         """Lets the form be resized, with the pages and the rules list growing with it.
 
@@ -130,6 +155,7 @@ class ConfigureForm(Form):
         """
         self.AutoSize = False
         self.MinimumSize = self.Size
+        self.MaximumSize = Size(self.Width * 2, self.Height * 2)
         fill = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
         for page in (self._overview_page, self._files_page, self._folders_page, self._options_page, self._rules_page):
             page.Anchor = fill
@@ -1004,7 +1030,7 @@ class ConfigureForm(Form):
         self._metadata_rules_add_rule.UseVisualStyleBackColor = True
         self._metadata_rules_add_rule.Click += self.add_metadata_rule
 
-        self.load_rules_page_settings()
+        self._metadata_rules_container.Resize += self.fit_metadata_rules
 
         #Grow the rules list with the form. Set here because the rules page is created when first shown.
         self._metadata_rules_container.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
@@ -2127,6 +2153,9 @@ class ConfigureForm(Form):
         elif sender.Tag is self._rules_page:
             if self._rules_page.Controls.Count == 0:
                 self.create_rules_page()
+                #Scale the new page before the rules are added, since each rule is scaled as it is added
+                self.scale_new_controls(self._rules_page)
+                self.load_rules_page_settings()
 
         elif sender.Tag is self._options_page:
             if self._options_page.Controls.Count == 0:
@@ -2138,6 +2167,8 @@ class ConfigureForm(Form):
                 control.Tag.Visible = False
         
         sender.Checked = True
+
+        self.scale_new_controls(sender.Tag)
                 
         sender.Tag.Visible = True
         
@@ -2435,15 +2466,36 @@ class ConfigureForm(Form):
     def add_metadata_rule(self, sender, e, exclude_rule=None):
         """Creates a new metadata rule and adds it into metadata rules container"""
         rule = MetadataExcludeRuleControl(self.remove_metadata_rule, exclude_rule)
-        self._metadata_rules_container.Controls.Add(rule)
+        self.add_metadata_rule_control(rule)
         self._metadata_rules_container.ScrollControlIntoView(rule)
 
 
     def add_metadata_rule_group(self, sender, e, exclude_rule_group=None):
         """Creates a new metadata group and adds it into the metadata rules container"""
         group = MetadataExcludeGroupControl(self.remove_metadata_rule, exclude_rule_group)
-        self._metadata_rules_container.Controls.Add(group)
+        self.add_metadata_rule_control(group)
         self._metadata_rules_container.ScrollControlIntoView(group)
+
+
+    def add_metadata_rule_control(self, control):
+        """Scales a new rule or group control for the screen DPI, fits it to the rules list and adds it"""
+        scale_for_dpi(control)
+        self.mark_dpi_scaled(control)
+        control.fit_width(self.metadata_rules_width() - control.Margin.Horizontal)
+        self._metadata_rules_container.Controls.Add(control)
+
+
+    def metadata_rules_width(self):
+        """The width available to the rules, leaving room for the vertical scroll bar"""
+        container = self._metadata_rules_container
+        width = container.ClientSize.Width - container.Padding.Horizontal
+        if not container.VerticalScroll.Visible:
+            width -= SystemInformation.VerticalScrollBarWidth
+        return width
+
+
+    def fit_metadata_rules(self, sender, e):
+        fit_rule_controls(self._metadata_rules_container, self.metadata_rules_width())
 
 
     def remove_metadata_rule(self, sender, e):
