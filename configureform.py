@@ -80,7 +80,9 @@ class ConfigureForm(Form):
         #The controls are laid out for 96 DPI. Each control is scaled to the screen DPI once, when it is first shown.
         self._dpi_scaled = set()
         self.scale_new_controls(self)
-        for control in (self._insert_controls, self._space_automatically, self._preview_book_selector):
+        #These move between the files and folders pages, so they aren't on the form yet.
+        #The insert controls are scaled when first shown, since create_insert_controls sets their size.
+        for control in (self._space_automatically, self._preview_book_selector):
             self.scale_new_controls(control)
 
         print "Done the initialize function"
