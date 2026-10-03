@@ -263,7 +263,7 @@ class ConfigureForm(Form):
         self.Controls.Add(self._cancel)
         self.Controls.Add(self._okay)
         self.Controls.Add(self._toolstrip)
-        self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+        # self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         self.StartPosition = FormStartPosition.CenterParent
         self.MaximizeBox = False
         self.MinimizeBox = False
