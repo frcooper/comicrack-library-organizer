@@ -2067,8 +2067,9 @@ class ConfigureForm(Form):
         """
         if sender.Checked:
             return
-        
+
         self.SuspendLayout()
+        created_rules_page = False
 
         #Save the metadata rules when switching away from the rules page. 
         #This caches it so it doesn't have to be rebuit everytime the preview text is updated
@@ -2108,6 +2109,7 @@ class ConfigureForm(Form):
         elif sender.Tag is self._rules_page:
             if self._rules_page.Controls.Count == 0:
                 self.create_rules_page()
+                created_rules_page = True
 
         elif sender.Tag is self._options_page:
             if self._options_page.Controls.Count == 0:
@@ -2126,7 +2128,11 @@ class ConfigureForm(Form):
         ThemeMe(self)
 
         self.ResumeLayout()
-        
+
+        #Showing the new rules page lays it out, which scrolls the rules list down again
+        if created_rules_page:
+            self._metadata_rules_container.AutoScrollPosition = System.Drawing.Point(0, 0)
+
 
     #These five methods adjust which controls are visible when a checkbox changes
 
@@ -2542,6 +2548,9 @@ class ConfigureForm(Form):
                 self.add_metadata_rule_group(None, None, rule)
             else:
                 self.add_metadata_rule(None, None, rule)
+
+        #Adding each rule scrolls it into view, so show the start of the rules after loading
+        self._metadata_rules_container.AutoScrollPosition = System.Drawing.Point(0, 0)
 
         #Listboxes
         self._excluded_folders_list.Items.Clear()
